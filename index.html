@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>成都日记 · Yvaine</title>
+    <title>成都日记 · 紫韵芭比随行</title>
     <style>
         :root {
             --bg-purple: #9b84b8;
@@ -88,12 +88,12 @@
             height: 100%;
         }
 
-        /* 1. 左上角：背景图 (bg.jpg) + 完整大熊猫 (panda.png) */
+        /* 1. 左上角：红墙竹影 + 吃竹大熊猫 */
         .weather-panda-card {
-            height: 56%; /* 提高比例，保证照片完整展示 */
+            height: 56%;
             position: relative;
             overflow: hidden;
-            background: #52272c;
+            background: linear-gradient(180deg, #1b3d2f 0%, #8b262a 50%, #52272c 100%);
         }
 
         .bg-img {
@@ -101,7 +101,7 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 保证背景图铺满 */
+            object-fit: cover;
             z-index: 1;
         }
 
@@ -123,7 +123,7 @@
         .time-text { font-size: 11px; font-weight: 800; color: var(--dark-purple); }
         .weather-text { font-size: 9px; color: #614a7e; font-weight: 600; }
 
-        /* 大熊猫吃竹子区域：调整为按比例完全包含不裁剪 */
+        /* 大熊猫区域 (优化适配，不截断，增加暗角融合) */
         .panda-box {
             position: absolute;
             bottom: 0;
@@ -138,10 +138,10 @@
         }
 
         .panda-img {
-            max-width: 95%;
+            max-width: 100%;
             max-height: 100%;
-            object-fit: contain; /* 关键修改：保证熊猫整体完整展示，决不截断 */
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
             animation: pandaEat 2s infinite ease-in-out;
             transform-origin: bottom center;
         }
@@ -269,7 +269,7 @@
         .barbie-img {
             max-width: 95%;
             max-height: 95%;
-            object-fit: contain; /* 保证右侧芭比整张完整显示 */
+            object-fit: contain;
             filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2));
             transition: all 0.3s ease;
         }
@@ -280,6 +280,19 @@
             25% { transform: translate(-2px, 1px) rotate(-1deg); }
             75% { transform: translate(2px, -1px) rotate(1deg); }
         }
+
+        .upload-mask {
+            position: absolute;
+            bottom: 4px;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            z-index: 20;
+            cursor: pointer;
+        }
+        .hidden-file { display: none; }
     </style>
 </head>
 <body>
@@ -288,13 +301,13 @@
         <div class="header-bar">
             <span>🌸 成都日记</span>
             <span>CHENGDU & BARBIE</span>
-            <span>✨ Yvaine</span>
+            <span>✨ 紫韵随行</span>
         </div>
 
         <div class="main-content">
             <div class="left-panel">
                 
-                <!-- 左上：背景图1 + 吃竹大熊猫图2 + 实时时间天气 -->
+                <!-- 左上：背景图 + 大熊猫 -->
                 <div class="glass-card weather-panda-card">
                     <div class="weather-overlay">
                         <div>
@@ -304,16 +317,18 @@
                         <div style="font-size: 14px;">⛅</div>
                     </div>
 
-                    <!-- 背景图 -->
-                    <img src="bg.jpg" class="bg-img" alt="成都红墙竹影">
+                    <!-- 红墙背景 (多重路径兼容) -->
+                    <img id="bgImg" src="bg.jpg" class="bg-img" alt="背景" onerror="tryNextBg(this)">
 
-                    <!-- 完整大熊猫 -->
+                    <!-- 大熊猫 -->
                     <div class="panda-box">
-                        <img src="panda.png" class="panda-img" alt="吃竹大熊猫">
+                        <img id="pandaImg" src="panda.png" class="panda-img" alt="大熊猫" onerror="tryNextPanda(this)">
                     </div>
+
+                    <div class="upload-mask" onclick="document.getElementById('fileBg').click()">📷 换背景/熊猫</div>
                 </div>
 
-                <!-- 左下：2列4行 To-Do List -->
+                <!-- 左下：To-Do List -->
                 <div class="glass-card todo-card">
                     <div class="todo-title">📝 今日打卡 To-Do List</div>
                     <div class="todo-grid">
@@ -333,7 +348,7 @@
 
             </div>
 
-            <!-- 右侧面板：芭比形象 + 情绪控制 -->
+            <!-- 右侧面板：芭比形象 -->
             <div class="right-panel">
                 <div class="glass-card barbie-card">
                     <div class="emotion-selector">
@@ -348,21 +363,50 @@
                     <div class="emotion-bubble" id="emotionBubble">✨ 今天心情超棒！</div>
 
                     <div class="character-stage" id="stage">
-                        <!-- 自动支持 barbie-outfit.jpg 或 barbie.jpg -->
-                        <img id="barbieImg" src="barbie-outfit.jpg" class="barbie-img" alt="芭比真人形象" onerror="this.src='barbie.jpg';">
+                        <!-- 多重名称兼容：按顺序尝试加载所有的常见名字 -->
+                        <img id="barbieImg" src="barbie-outfit.jpg" class="barbie-img" alt="芭比形象" onerror="tryNextBarbie(this)">
                     </div>
+
+                    <div class="upload-mask" onclick="document.getElementById('fileBarbie').click()">📷 替换芭比人物</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 应急本地文件接口 -->
+    <input type="file" id="fileBg" class="hidden-file" accept="image/*" onchange="uploadBg(event)">
+    <input type="file" id="fileBarbie" class="hidden-file" accept="image/*" onchange="uploadBarbie(event)">
+
     <script>
-        // 实时更新成都时间
+        // 自动兼容路径查找器
+        const barbiePaths = ['barbie-outfit.jpg', 'barbie.jpg', 'barbie-outfit.png', 'barbie.png', 'barbie-face.jpg'];
+        let barbieIdx = 0;
+        function tryNextBarbie(img) {
+            barbieIdx++;
+            if (barbieIdx < barbiePaths.length) {
+                img.src = barbiePaths[barbieIdx];
+            }
+        }
+
+        const bgPaths = ['bg.jpg', 'bg.png', 'bg.jpeg'];
+        let bgIdx = 0;
+        function tryNextBg(img) {
+            bgIdx++;
+            if (bgIdx < bgPaths.length) img.src = bgPaths[bgIdx];
+        }
+
+        const pandaPaths = ['panda.png', 'panda.jpg', 'panda.jpeg'];
+        let pandaIdx = 0;
+        function tryNextPanda(img) {
+            pandaIdx++;
+            if (pandaIdx < pandaPaths.length) img.src = pandaPaths[pandaIdx];
+        }
+
+        // 实时时间
         function updateChengduTime() {
             const now = new Date();
             const options = { timeZone: 'Asia/Shanghai', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            const timeStr = now.toLocaleTimeString('zh-CN', options);
-            document.getElementById('chengduTime').innerText = `成都 ${timeStr}`;
+            document.getElementById('chengduTime').innerText = `成都 ${now.toLocaleTimeString('zh-CN', options)}`;
         }
         setInterval(updateChengduTime, 1000);
         updateChengduTime();
@@ -379,14 +423,31 @@
 
         function setEmotion(type) {
             const btns = document.querySelectorAll('.emotion-btn');
-            btns.forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('onclick').includes(type));
-            });
+            btns.forEach(btn => btn.classList.toggle('active', btn.getAttribute('onclick').includes(type)));
 
             const config = emotions[type];
             document.getElementById('emotionBubble').innerText = config.bubble;
             document.getElementById('barbieImg').style.filter = config.filter;
             document.getElementById('stage').className = "character-stage " + config.anim;
+        }
+
+        // 本地一键上传替代
+        function uploadBg(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const r = new FileReader();
+                r.onload = ev => document.getElementById('bgImg').src = ev.target.result;
+                r.readAsDataURL(file);
+            }
+        }
+
+        function uploadBarbie(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const r = new FileReader();
+                r.onload = ev => document.getElementById('barbieImg').src = ev.target.result;
+                r.readAsDataURL(file);
+            }
         }
     </script>
 </body>
