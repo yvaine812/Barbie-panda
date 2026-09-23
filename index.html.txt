@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>成都日记 · 芭比情绪随行</title>
+    <style>
+        :root {
+            --bg-purple: #9b84b8;
+            --main-purple: #7b629e;
+            --dark-purple: #483563;
+            --light-purple: #e9e1f2;
+            --glass-bg: rgba(233, 225, 242, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --card-shadow: 0 10px 30px rgba(72, 53, 99, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #a38ebf 0%, #836ba3 50%, #684f88 100%);
+            color: var(--dark-purple);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 8px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 430px;
+            height: 94vh;
+            max-height: 890px;
+            background: var(--bg-purple);
+            border-radius: 38px;
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 顶部 Header */
+        .header-bar {
+            padding: 12px 18px 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-title {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* 主体 2 列网格布局 */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.05fr;
+            gap: 10px;
+            padding: 8px 10px 12px;
+            min-height: 0;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .left-panel, .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+        }
+
+        /* 1. 左上：背景图 + 吃竹大熊猫 + 实时成都时间天气 */
+        .weather-panda-card {
+            height: 50%;
+            position: relative;
+            background-image: url('https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=600&q=80'); /* 红墙竹影质感图 */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .weather-overlay {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 6px 10px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .time-text { font-size: 11px; font-weight: 800; color: var(--dark-purple); }
+        .weather-text { font-size: 10px; color: #614a7e; font-weight: 600; }
+
+        /* 真实大熊猫容器 (支持吃竹动效) */
+        .panda-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 75%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .real-panda-img {
+            width: 85%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+            animation: pandaMunch 1.8s infinite ease-in-out;
+            transform-origin: bottom center;
+        }
+
+        @keyframes pandaMunch {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.02) rotate(-1deg); }
+            50% { transform: scale(0.99) rotate(1deg); }
+            75% { transform: scale(1.01) rotate(0.5deg); }
+        }
+
+        /* 2. 左下：To-Do List 两列四行 */
+        .todo-card {
+            height: 50%;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--dark-purple);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .todo-grid {
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            grid-template-rows: repeat(4, 1fr);
+            gap: 6px 4px;
+            flex: 1;
+            align-items: center;
+        }
+
+        .todo-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: #7b629e;
+            justify-self: center;
+            cursor: pointer;
+        }
+
+        .todo-input {
+            width: 100%;
+            border: none;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            color: #3b2852;
+            outline: none;
+        }
+
+        .todo-checkbox:checked + .todo-input {
+            text-decoration: line-through;
+            color: #9c8fb3;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 3. 右侧：真人芭比 + 6个情绪按钮 */
+        .barbie-card {
+            height: 100%;
+            position: relative;
+            background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(200, 180, 225, 0.7) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 12px;
+        }
+
+        /* 右上角 6 个情绪按钮 */
+        .emotion-selector {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 5px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .emotion-btn {
+            border: none;
+            background: rgba(233, 225, 242, 0.6);
+            font-size: 9px;
+            padding: 3px 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark-purple);
+            transition: all 0.2s;
+        }
+
+        .emotion-btn.active {
+            background: var(--main-purple);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(123, 98, 158, 0.4);
+        }
+
+        /* 人物状态舞台 */
+        .character-stage {
+            position: relative;
+            width: 100%;
+            height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .barbie-img {
+            width: 90%;
+            height: auto;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.25));
+            transition: all 0.3s ease;
+        }
+
+        /* 情绪气泡提示 */
+        .emotion-bubble {
+            position: absolute;
+            top: 15%;
+            left: 10px;
+            background: #ffffff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--dark-purple);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            animation: popIn 0.3s ease-out;
+            z-index: 8;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        /* 情绪特效 Overlay */
+        .fx-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 7;
+            border-radius: 24px;
+        }
+
+        /* 爆炸与愤怒特效动画 */
+        .shake-anim { animation: shake 0.4s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-2px, 0px) rotate(-1deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            60% { transform: translate(-1px, 2px) rotate(0deg); }
+            80% { transform: translate(2px, 1px) rotate(1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 顶部 Header -->
+        <div class="header-bar">
+            <span>🌸 成都日记</span>
+            <span class="header-title">CHENGDU & BARBIE</span>
+            <span>✨ 紫韵随行</span>
+        </div>
+
+        <div class="main-content">
+            <!-- 左侧面板 -->
+            <div class="left-panel">
+                
+                <!-- 左上：红墙竹影 + 吃竹大熊猫 + 实时时间天气 -->
+                <div class="glass-card weather-panda-card">
+                    <div class="weather-overlay">
+                        <div>
+                            <div class="time-text" id="chengduTime">成都 17:55:31</div>
+                            <div class="weather-text">📍 武侯祠 · 22°C 多云</div>
+                        </div>
+                        <div style="font-size: 16px;">⛅</div>
+                    </div>
+
+                    <!-- 真实大熊猫形象 (非卡通) -->
+                    <div class="panda-container">
+                        <!-- 使用真实吃竹大熊猫透明素材 -->
+                        <img src="https://images.rawpixel.com/image_png_800/2023/08/01/rawpixel-id-12104033-png.png" alt="吃竹大熊猫" class="real-panda-img">
+                    </div>
+                </div>
+
+                <!-- 左下：To-Do List 2列4行 -->
+                <div class="glass-card todo-card">
+                    <div class="card-title">📝 今日打卡 To-Do List</div>
+                    <div class="todo-grid">
+                        <!-- 行 1 -->
+                        <input type="checkbox" class="todo-checkbox" checked>
+                        <input type="text" class="todo-input" value="1. 打卡红墙竹影名场面">
+                        
+                        <!-- 行 2 -->
+                        <input type="checkbox" class="todo-checkbox">
+                        <input type="text" class="todo-input" value="2. 看萌萌大熊猫吃竹子">
+                        
+                        <!-- 行 3 -->
+                        <input type="checkbox" class="todo-checkbox">
+                        <input type="text" class="todo-input" value="3. 搭配今日紫色系西装">
+                        
+                        <!-- 行 4 -->
+                        <input type="checkbox" class="todo-checkbox">
+                        <input type="text" class="todo-input" value="4. 切换情绪并拍摄照片">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 右侧面板：芭比人物与情绪联动 -->
+            <div class="right-panel">
+                <div class="glass-card barbie-card">
+                    
+                    <!-- 右上角 6 种情绪按钮 -->
+                    <div class="emotion-selector">
+                        <button class="emotion-btn active" onclick="setEmotion('happy')">😊 开心</button>
+                        <button class="emotion-btn" onclick="setEmotion('none')">😶 没表情</button>
+                        <button class="emotion-btn" onclick="setEmotion('speechless')">😑 无语</button>
+                        <button class="emotion-btn" onclick="setEmotion('sad')">😢 悲伤</button>
+                        <button class="emotion-btn" onclick="setEmotion('angry')">😡 愤怒</button>
+                        <button class="emotion-btn" onclick="setEmotion('boom')">💥 爆炸</button>
+                    </div>
+
+                    <!-- 情绪特效层与气泡 -->
+                    <div class="fx-layer" id="fxLayer"></div>
+                    <div class="emotion-bubble" id="emotionBubble">✨ 今天心情超棒！</div>
+
+                    <!-- 人物形象舞台 (保留第3张脸，第4张服装) -->
+                    <div class="character-stage" id="stage">
+                        <img id="barbieImg" src="https://images.rawpixel.com/image_png_800/321/rawpixel-id-6031267-png.png" alt="真人芭比形象" class="barbie-img">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 实时更新中国成都时间 (24小时制)
+        function updateChengduTime() {
+            const now = new Date();
+            // 转化为中国标准时间 (UTC+8)
+            const options = { timeZone: 'Asia/Shanghai', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const timeStr = now.toLocaleTimeString('zh-CN', options);
+            document.getElementById('chengduTime').innerText = `成都 ${timeStr}`;
+        }
+        setInterval(updateChengduTime, 1000);
+        updateChengduTime();
+
+        // 2. 情绪联动逻辑（6种情绪切换）
+        const emotions = {
+            happy: {
+                text: "✨ 开心爆棚！",
+                bubble: "😊 今天是绝美的一天~",
+                filter: "drop-shadow(0 8px 16px rgba(123, 98, 158, 0.4)) brightness(1.05)",
+                bgFx: "radial-gradient(circle, rgba(255,220,240,0.5) 0%, transparent 70%)",
+                anim: ""
+            },
+            none: {
+                text: "😶 冷静思考中...",
+                bubble: "😶 保持淡定与优雅。",
+                filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.2)) grayscale(20%)",
+                bgFx: "none",
+                anim: ""
+            },
+            speechless: {
+                text: "😑 真是让人无语...",
+                bubble: "😑 已经不想说话了。",
+                filter: "drop-shadow(0 8px 16px rgba(80,80,80,0.3)) contrast(95%)",
+                bgFx: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%)",
+                anim: ""
+            },
+            sad: {
+                text: "😢 有一点点伤心",
+                bubble: "😢 需要成都火锅安抚...",
+                filter: "drop-shadow(0 8px 16px rgba(50,100,200,0.3)) hue-rotate(30deg) brightness(0.95)",
+                bgFx: "linear-gradient(180deg, rgba(150,180,255,0.3) 0%, transparent 100%)",
+                anim: ""
+            },
+            angry: {
+                text: "😡 正在生怒气！",
+                bubble: "😡 别惹芭比状态！",
+                filter: "drop-shadow(0 8px 16px rgba(255,50,50,0.5)) sepia(30%) hue-rotate(-50deg)",
+                bgFx: "radial-gradient(circle, rgba(255,100,100,0.3) 0%, transparent 70%)",
+                anim: "shake-anim"
+            },
+            boom: {
+                text: "💥 情绪彻底大爆炸！",
+                bubble: "💥 已经炸裂啦！！",
+                filter: "drop-shadow(0 8px 20px rgba(255,0,0,0.8)) invert(10%) brightness(1.2)",
+                bgFx: "radial-gradient(circle, rgba(255,0,0,0.5) 0%, rgba(255,200,0,0.3) 50%, transparent 80%)",
+                anim: "shake-anim"
+            }
+        };
+
+        function setEmotion(type) {
+            // 更新按钮激活状态
+            const btns = document.querySelectorAll('.emotion-btn');
+            btns.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('onclick').includes(type));
+            });
+
+            const config = emotions[type];
+            const img = document.getElementById('barbieImg');
+            const bubble = document.getElementById('emotionBubble');
+            const fx = document.getElementById('fxLayer');
+            const stage = document.getElementById('stage');
+
+            // 联动 1：更新提示文本与气泡
+            bubble.innerText = config.bubble;
+
+            // 联动 2：更新视觉滤镜与色彩
+            img.style.filter = config.filter;
+
+            // 联动 3：更新背景光效与动效
+            fx.style.background = config.bgFx;
+
+            // 联动 4：震颤/爆炸物理动作
+            stage.className = "character-stage " + config.anim;
+        }
+    </script>
+</body>
+</html>
+
